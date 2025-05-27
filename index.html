@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Меню с заказом</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+  }
+  button {
+    margin: 5px 0;
+    padding: 10px 15px;
+    width: 100%;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #categoryButtons button.active {
+    background-color: #4caf50;
+    color: white;
+  }
+  #dishButtons button.active {
+    background-color: #2196f3;
+    color: white;
+  }
+  #orderInfo {
+    margin-top: 20px;
+    background: #e0ffe0;
+    padding: 15px;
+    border-radius: 5px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<h1>Меню</h1>
+
+<div id="categoryButtons"></div>
+<div id="dishButtons"></div>
+
+<div id="orderInfo"></div>
+
+<script>
+  // Данные меню (без цен)
+  const menu = {
+    "Салаты": [
+      "Цезарь с курицей",
+      "Греческий салат",
+      "Винегрет",
+      "Оливье"
+    ],
+    "Супы": [
+      "Рамен с говядиной",
+      "Чечевичный суп",
+      "Сырно-грибной суп",
+      "Царская уха"
+    ],
+    "Гарниры": [
+      "Брокколи и цветная капуста в кляре",
+      "Овощи на гриле",
+      "Картофель фри",
+      "Картофельные дольки с зеленью и чесноком",
+      "Рис припущенный",
+      "Жареный картофель с грибами"
+    ],
+    "Горячие блюда": [
+      "Медальоны из говядины с овощами и соусом тар-тар",
+      "Судак жареный в ореховом соусе",
+      "Семга с плавленым сыром",
+      "Курица с запеченым картофелем и грибным соусом",
+      "Грудинка BBQ с картофелем и овощным салатом",
+      "Стейк семги со сливочным соусом и рисом",
+      "Говядина под сливочно-сырным соусом и грибами",
+      "Баранина по-тайски с запеченым картофелем",
+      "Антрекот из говядины с овощным тар-тар",
+      "Антрекот из баранины в панировке с грибным соусом и запеченым картофелем",
+      "Филе утки запеченая с черносливом и грушей",
+      "Нежные куриные медальоны с грибами и болгарским перцем"
+    ],
+    "Блюда на мангале": [
+      "Хан-кебаб из говядины с фри",
+      "Антрекот из баранины",
+      "Люля-кебаб из баранины",
+      "Люля-кебаб с сыром",
+      "Шашлык из баранины",
+      "Утки",
+      "Куриных бёдрышек",
+      "Куриных крыльев",
+      "Куриного филе",
+      "Печени в курдюке",
+      "Шампиньоны на гриле"
+    ],
+    "Блюда на компанию": [
+      "Сет 'Meat Grill' (антрекот говядины, баранины, грудинка BBQ, медальоны говядины, куриное филе, филе утки, куриные крылья, овощи гриль, фри, картофельные дольки, соусы)",
+      "Ассорти шашлыков (баранина, утка, куриное филе, крылья, бедра, люля-кебаб с сыром, печень в курдюке, овощи, картофель, красный соус)",
+      "Ассорти колбасок собственного приготовления (говядина, баранина, курица, картофель жареный с грибами, белый соус)",
+      "Сет 'Light' (семга на шпажках, судак на гриле, куриное филе, куриные колбаски, овощи гриль, сливочный соус)"
+    ],
+    "Соусы": [
+      "Горчичный",
+      "Грибной",
+      "Сливочный",
+      "Tap-Tap",
+      "Сальса"
+    ],
+    "Десерты": [
+      "Фруктовая тарелка",
+      "Чизкейк",
+      "Мороженое",
+      "Шоколад в ассортименте"
+    ]
+  };
+
+  const categoryDiv = document.getElementById("categoryButtons");
+  const dishDiv = document.getElementById("dishButtons");
+  const orderDiv = document.getElementById("orderInfo");
+
+  let selectedCategory = null;
+  let selectedDish = null;
+
+  // Создаём кнопки категорий
+  function createCategoryButtons() {
+    categoryDiv.innerHTML = "";
+    for (const category in menu) {
+      const btn = document.createElement("button");
+      btn.textContent = category;
+      btn.onclick = () => selectCategory(category, btn);
+      categoryDiv.appendChild(btn);
+    }
+  }
+
+  // Выбор категории
+  function selectCategory(category, btn) {
+    selectedCategory = category;
+    selectedDish = null;
+    highlightActiveButton(categoryDiv, btn);
+    createDishButtons(category);
+    orderDiv.style.display = "none";
+  }
+
+  // Создаём кнопки блюд выбранной категории
+  function createDishButtons(category) {
+    dishDiv.innerHTML = "";
+    const dishes = menu[category];
+    dishes.forEach(dish => {
+      const btn = document.createElement("button");
+      btn.textContent = dish;
+      btn.onclick = () => selectDish(dish, btn);
+      dishDiv.appendChild(btn);
+    });
+  }
+
+  // Выбор блюда
+  function selectDish(dish, btn) {
+    selectedDish = dish;
+    highlightActiveButton(dishDiv, btn);
+    showOrderConfirm();
+  }
+
+  // Подсветка активной кнопки
+  function highlightActiveButton(container, activeBtn) {
+    Array.from(container.children).forEach(btn => {
+      btn.classList.toggle("active", btn === activeBtn);
+    });
+  }
+
+  // Показать окно подтверждения заказа
+  function showOrderConfirm() {
+    if (!selectedDish) return;
+    orderDiv.style.display = "block";
+    orderDiv.innerHTML = `
+      <p>Вы выбрали: <strong>${selectedDish}</strong></p>
+      <button id="confirmBtn">Подтвердить заказ</button>
+      <button id="cancelBtn">Отмена</button>
+      <div id="orderTime" style="margin-top:10px;"></div>
+    `;
+
+    document.getElementById("confirmBtn").onclick = () => {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString();
+      document.getElementById("orderTime").textContent = `Заказ принят в ${timeStr}`;
+      // Можно добавить логику сохранения заказа, если нужно
+    };
+
+    document.getElementById("cancelBtn").onclick = () => {
+      orderDiv.style.display = "none";
+      selectedDish = null;
+      highlightActiveButton(dishDiv, null);
+    };
+  }
+
+  // Запуск
+  createCategoryButtons();
+</script>
+
+</body>
+</html>
